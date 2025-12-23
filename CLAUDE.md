@@ -41,16 +41,6 @@ When making architectural choices that affect multiple components or future main
 
 Example ADR: `docs/adr/001-use-undici-for-proxy.md`
 
-### PLAN
-
-I collect and synchronize my decision-making and development plans, saving them in PLAN.md.
-
-### PROGRESS
-
-The progress document records the current development progress and current functional test results.
-It should be compared with the PLAN.md file, and the document should be saved as PROGRESS.md.
-
-
 ## Negative Constraints
 
 - No clever tricks or obscure patterns

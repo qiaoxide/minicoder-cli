@@ -45,18 +45,21 @@ export const symbols = {
  * Render markdown to terminal with syntax highlighting
  */
 export async function renderMarkdown(text: string): Promise<string> {
-  const renderer = new marked.Renderer();
+  const result = marked.parse(text, {
+    async: false, // 同步解析
+  }) as string;
 
-  renderer.code = ({ text, lang }) => {
-    const language = lang || 'text';
-    const highlighted = hljs.getLanguage(language)
-      ? hljs.highlight(text, { language }).value
-      : hljs.highlightAuto(text).value;
-
-    return `\n${chalk.bgGray.white(' ' + (lang || 'code') + ' ')}\n${highlighted}\n`;
-  };
-
-  return marked.parse(text, { renderer }) as string;
+  // 简单处理：移除 HTML 标签（临时方案）
+  // 完整方案需要使用 marked-terminal 或自定义渲染器
+  return result
+    .replace(/<p>/g, '')
+    .replace(/<\/p>/g, '\n')
+    .replace(/<strong>/g, '')
+    .replace(/<\/strong>/g, '')
+    .replace(/<em>/g, '')
+    .replace(/<\/em>/g, '')
+    .replace(/<br>/g, '\n')
+    .trim();
 }
 
 /**

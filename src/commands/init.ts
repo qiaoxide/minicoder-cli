@@ -26,12 +26,8 @@ import {
   confirmAction,
 } from '../ui/input.js';
 import {
-  startLoading,
-  stopSuccess,
-  stopError,
   withLoading,
 } from '../ui/spinner.js';
-import { isCancel } from '@clack/prompts';
 
 /**
  * 初始化命令
@@ -62,7 +58,7 @@ export class InitCommand implements Command {
       printInfo('或设置环境变量: export MINICODER_API_KEY="your-key"');
 
       const newApiKey = await passwordInput('输入你的 Gemini API Key');
-      if (isCancel(newApiKey) || !newApiKey) {
+      if (newApiKey === null || !newApiKey) {
         printInfo('跳过 API Key 配置，可稍后通过环境变量设置');
         config.set('apiKey', 'YOUR_API_KEY_HERE');
       } else {
@@ -80,12 +76,12 @@ export class InitCommand implements Command {
       printKeyValue('当前模型', String(config.get('model')));
     } else {
       const modelChoice = await singleSelect('选择模型', [
-        { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash', hint: '快速响应，推荐日常使用' },
-        { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro', hint: '高质量输出，适合复杂任务' },
+        { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash', hint: '快速响应，推荐日常使用' },
+        { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro', hint: '高质量输出，适合复杂任务' },
         { value: 'gemini-pro', label: 'Gemini Pro', hint: '平衡性能和成本' },
       ]);
 
-      if (!isCancel(modelChoice) && modelChoice) {
+      if (modelChoice !== null && modelChoice) {
         config.set('model', modelChoice);
         printSuccess(`模型已设置为: ${modelChoice}`);
       } else {
@@ -107,7 +103,7 @@ export class InitCommand implements Command {
         const proxyUrl = await textInput('输入代理地址', {
           placeholder: 'http://127.0.0.1:7890',
         });
-        if (!isCancel(proxyUrl) && proxyUrl) {
+        if (proxyUrl !== null && proxyUrl) {
           config.set('proxy', proxyUrl);
           printSuccess(`代理已设置为: ${proxyUrl}`);
         }

@@ -1,55 +1,32 @@
 /**
  * Interactive Input Utilities
- * Prompts, selections, and user input using @clack/prompts
+ * Prompts, selections, and user input using Ink
  */
 
-import {
-  confirm,
-  select,
-  multiselect,
-  text,
-  password,
-  intro,
-  outro,
-  cancel,
-  isCancel,
-} from '@clack/prompts';
 import chalk from 'chalk';
 import { symbols } from './format.js';
+import { inkTextInput, inkSelect, inkMultiSelect, inkConfirm } from './components/index.js';
 
-export { intro, outro, cancel, isCancel };
-
-/**
- * Display an intro banner
- */
+// Ink 没有 intro/outro/cancel，直接打印
 export function showIntro(name: string, version: string): void {
-  intro(chalk.cyan(`${chalk.bold(name)} v${version}`));
+  console.log(chalk.cyan(`${chalk.bold(name)} v${version}`));
+  console.log('');
 }
 
-/**
- * Display an outro message
- */
 export function showOutro(message: string): void {
-  outro(message);
+  console.log(chalk.green(message));
 }
 
-/**
- * Cancel operation with message
- */
 export function showCancel(message: string): void {
-  cancel(message);
+  console.log(chalk.yellow(message));
 }
 
 /**
  * Confirm action - returns true/false or null if cancelled
  */
 export async function confirmAction(message: string): Promise<boolean | null> {
-  const result = await confirm({
-    message: `${chalk.cyan(symbols.arrow)} ${message}`,
-    active: chalk.green('Yes'),
-    inactive: chalk.gray('No'),
-  });
-  return isCancel(result) ? null : result;
+  const result = await inkConfirm(`${chalk.cyan(symbols.arrow)} ${message}`);
+  return result;
 }
 
 /**
@@ -63,14 +40,7 @@ export async function textInput(
     validate?: (value: string) => string | Error | undefined;
   }
 ): Promise<string | null> {
-  const result = await text({
-    message: `${chalk.cyan(symbols.arrow)} ${message}`,
-    placeholder: options?.placeholder,
-    defaultValue: options?.defaultValue,
-    validate: options?.validate,
-  });
-
-  return isCancel(result) ? null : (result as string);
+  return inkTextInput(`${chalk.cyan(symbols.arrow)} ${message}`, options);
 }
 
 /**
@@ -80,12 +50,7 @@ export async function singleSelect<T extends string>(
   message: string,
   options: { value: T; label?: string; hint?: string }[]
 ): Promise<T | null> {
-  const result = await select<T>({
-    message: `${chalk.cyan(symbols.arrow)} ${message}`,
-    options: options as any,
-  });
-
-  return isCancel(result) ? null : result;
+  return inkSelect(`${chalk.cyan(symbols.arrow)} ${message}`, options);
 }
 
 /**
@@ -95,24 +60,17 @@ export async function multiSelect<T extends string>(
   message: string,
   options: { value: T; label?: string; hint?: string }[]
 ): Promise<T[] | null> {
-  const result = await multiselect<T>({
-    message: `${chalk.cyan(symbols.arrow)} ${message}`,
-    options: options as any,
-    required: false,
-  });
-
-  return isCancel(result) ? null : result;
+  return inkMultiSelect(`${chalk.cyan(symbols.arrow)} ${message}`, options);
 }
 
 /**
  * Secure password input
  */
 export async function passwordInput(message: string): Promise<string | null> {
-  const result = await password({
-    message: `${chalk.cyan(symbols.arrow)} ${message}`,
+  // Ink 的 TextInput 支持 password 模式
+  return inkTextInput(`${chalk.cyan(symbols.arrow)} ${message}`, {
+    placeholder: '••••••••',
   });
-
-  return isCancel(result) ? null : (result as string);
 }
 
 /**

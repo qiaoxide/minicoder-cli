@@ -5,9 +5,9 @@
  */
 
 import chalk from 'chalk';
-import { text, isCancel } from '@clack/prompts';
+import { multiLineInput } from './components/index.js';
 import { colors, symbols, boxContent } from './format.js';
-import { createDotsSpinner, typewriter } from './spinner.js';
+import { createDotsSpinner } from './spinner.js';
 
 // 可用命令列表
 const AVAILABLE_COMMANDS = [
@@ -19,7 +19,13 @@ const AVAILABLE_COMMANDS = [
 ];
 
 /**
- * 聊天输入 - @clack/prompts 实现
+ * 聊天输入 - ClaudeCode 风格多行输入
+ *
+ * 快捷键:
+ * - Enter: 换行
+ * - Ctrl+Enter: 提交
+ * - Ctrl+C: 取消
+ * - 方向键: 移动光标
  */
 export async function chatInput(
   message: string,
@@ -29,16 +35,10 @@ export async function chatInput(
 ): Promise<string | null> {
   const opts = options ?? {};
 
-  const result = await text({
-    message: colors.primary(message),
-    placeholder: opts.placeholder || '输入消息... (支持多行)',
+  return multiLineInput(message, {
+    placeholder: opts.placeholder || '输入消息...',
+    maxLines: 50,
   });
-
-  if (isCancel(result) || result === undefined) {
-    return null;
-  }
-
-  return result as string;
 }
 
 /**
@@ -80,7 +80,7 @@ export async function printAiMessage(
 
   console.log(`\n${chalk.green('╭─')} ${modelBadge}${chalk.green('AI')}${chalk.dim(' ──────────────────────')}`);
 
-  // 渲染 markdown 并打字输出
+  // 渲染 markdown
   const { renderMarkdown } = await import('./format.js');
   const rendered = await renderMarkdown(content);
   const lines = rendered.split('\n');
@@ -111,7 +111,9 @@ export function printHelpPanel(): void {
     ),
     '',
     chalk.dim('快捷键:'),
-    chalk.dim('  Ctrl+C   取消输入'),
+    chalk.dim('  Enter      换行'),
+    chalk.dim('  Ctrl+Enter 提交'),
+    chalk.dim('  Ctrl+C     取消'),
   ].join('\n');
 
   console.log(boxContent(content, '帮助'));
