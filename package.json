@@ -1,0 +1,44 @@
+{
+  "name": "minicoder-cli",
+  "version": "0.1.0",
+  "description": "A CLI tool for coding, writing, and thinking notes",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "mini": "dist/index.js"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "fmt": "prettier --write src"
+  },
+  "keywords": [
+    "cli",
+    "ai",
+    "gemini",
+    "coding"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.50.1",
+    "@typescript-eslint/parser": "^8.50.1",
+    "eslint": "^9.39.2",
+    "prettier": "^3.7.4",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.11.0",
+    "boxen": "^8.0.1",
+    "chalk": "^5.6.2",
+    "figures": "^6.1.0",
+    "highlight.js": "^11.11.1",
+    "marked": "^17.0.1",
+    "ora": "^9.0.0",
+    "undici": "^7.16.0"
+  }
+}
