@@ -82,17 +82,13 @@ describe('inkSelect (SimpleSelect)', () => {
   ];
 
   it('should render select with label', () => {
-    const { lastFrame } = render(
-      <SimpleSelect items={items} onSelect={() => {}} />
-    );
+    const { lastFrame } = render(<SimpleSelect items={items} onSelect={() => {}} />);
 
     expect(lastFrame()).toContain('❯ 请选择');
   });
 
   it('should render all options', () => {
-    const { lastFrame } = render(
-      <SimpleSelect items={items} onSelect={() => {}} />
-    );
+    const { lastFrame } = render(<SimpleSelect items={items} onSelect={() => {}} />);
 
     expect(lastFrame()).toContain('选项 A');
     expect(lastFrame()).toContain('选项 B');
@@ -100,9 +96,7 @@ describe('inkSelect (SimpleSelect)', () => {
   });
 
   it('should show current selection indicator', () => {
-    const { lastFrame } = render(
-      <SimpleSelect items={items} onSelect={() => {}} />
-    );
+    const { lastFrame } = render(<SimpleSelect items={items} onSelect={() => {}} />);
 
     // ink-select-input 使用 ❯ 作为选中标记
     expect(lastFrame()).toContain('❯');

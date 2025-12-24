@@ -67,8 +67,8 @@ Usage: ${this.binName} <command> [options]
 
 Commands:
 ${Array.from(unique.values())
-        .map((c) => `  ${c.name.padEnd(12)} ${c.description}`)
-        .join('\n')}
+  .map((c) => `  ${c.name.padEnd(12)} ${c.description}`)
+  .join('\n')}
 
 Options:
   --help, -h     Show this help message

@@ -1,303 +1,158 @@
-/**
- * ClaudeCode 风格的多行输入组件
- * 使用 Ink + useInput hook 实现
- */
+import React, { useState, useEffect, useRef } from 'react';
+import { Box, Text, useInput, useApp } from 'ink';
 
-import React, { useState, useEffect } from 'react';
-import { render, Box, Text, useInput } from 'ink';
-import chalk from 'chalk';
-
-interface MultiLineInputProps {
-  /** 提示信息 */
-  message: string;
-  /** 占位符 */
-  placeholder?: string;
-  /** 默认值 */
-  defaultValue?: string;
-  /** 提交回调 */
-  onSubmit: (value: string) => void;
-  /** 取消回调 */
-  onCancel?: () => void;
-  /** 最大行数 */
-  maxLines?: number;
-}
-
-// ANSI 转义序列
-const ARROW_UP = '\x1b[A';
-const ARROW_DOWN = '\x1b[B';
-const ARROW_RIGHT = '\x1b[C';
-const ARROW_LEFT = '\x1b[D';
-// Ctrl+Enter: 某些终端发送 \n，某些发送自定义序列
-const CTRL_ENTER = '\n';
-
-export function MultiLineInput({
-  message,
-  placeholder = '输入消息... (Enter 换行，Ctrl+Enter 提交，Ctrl+C 取消)',
-  defaultValue = '',
-  onSubmit,
-  onCancel,
-  maxLines = 50,
-}: MultiLineInputProps) {
-  const [lines, setLines] = useState<string[]>(
-    defaultValue ? defaultValue.split('\n') : ['']
-  );
-  const [cursorY, setCursorY] = useState(0);
-  const [cursorX, setCursorX] = useState(0);
-
-  // 处理键盘输入
-  useInput((input, key) => {
-    const currentLine = lines[cursorY] || '';
-
-    // Ctrl+C 取消
-    if (input === '\x03') {
-      onCancel?.();
-      return;
-    }
-
-    // Ctrl+Enter 提交 (注意: key.ctrl + input === '\n')
-    if (key.ctrl && input === '\n') {
-      const value = lines.join('\n').trim();
-      onSubmit(value);
-      return;
-    }
-
-    // Ctrl+J 也可以提交
-    if (key.ctrl && input === 'j') {
-      const value = lines.join('\n').trim();
-      onSubmit(value);
-      return;
-    }
-
-    // Enter 换行 (key.return 是 \r)
-    if (key.return) {
-      const beforeCursor = currentLine.slice(0, cursorX);
-      const afterCursor = currentLine.slice(cursorX);
-
-      const newLines = [...lines];
-      newLines[cursorY] = beforeCursor;
-      newLines.splice(cursorY + 1, 0, afterCursor);
-
-      setLines(newLines);
-      setCursorY(cursorY + 1);
-      setCursorX(0);
-      return;
-    }
-
-    // Backspace
-    if (key.backspace || key.delete) {
-      if (cursorX > 0) {
-        // 删除当前行字符
-        const newLine = currentLine.slice(0, cursorX - 1) + currentLine.slice(cursorX);
-        const newLines = [...lines];
-        newLines[cursorY] = newLine;
-        setLines(newLines);
-        setCursorX(cursorX - 1);
-      } else if (cursorY > 0) {
-        // 合并上一行
-        const prevLineLength = lines[cursorY - 1].length;
-        const newLines = [...lines];
-        newLines[cursorY - 1] += newLines[cursorY];
-        newLines.splice(cursorY, 1);
-        setLines(newLines);
-        setCursorY(cursorY - 1);
-        setCursorX(prevLineLength);
-      }
-      return;
-    }
-
-    // 方向键检测 (使用 ANSI 转义序列)
-    if (input === ARROW_UP) {
-      if (cursorY > 0) {
-        setCursorY(cursorY - 1);
-        setCursorX(Math.min(cursorX, lines[cursorY - 1].length));
-      }
-      return;
-    }
-
-    if (input === ARROW_DOWN) {
-      if (cursorY < lines.length - 1) {
-        setCursorY(cursorY + 1);
-        setCursorX(Math.min(cursorX, lines[cursorY + 1].length));
-      }
-      return;
-    }
-
-    if (input === ARROW_LEFT) {
-      if (cursorX > 0) {
-        setCursorX(cursorX - 1);
-      } else if (cursorY > 0) {
-        setCursorY(cursorY - 1);
-        setCursorX(lines[cursorY].length);
-      }
-      return;
-    }
-
-    if (input === ARROW_RIGHT) {
-      const currentLineLength = (lines[cursorY] || '').length;
-      if (cursorX < currentLineLength) {
-        setCursorX(cursorX + 1);
-      } else if (cursorY < lines.length - 1) {
-        setCursorY(cursorY + 1);
-        setCursorX(0);
-      }
-      return;
-    }
-
-    // 普通字符输入
-    if (input && input.length === 1 && !key.ctrl && !key.meta) {
-      const newLine = currentLine.slice(0, cursorX) + input + currentLine.slice(cursorX);
-      const newLines = [...lines];
-      newLines[cursorY] = newLine;
-      setLines(newLines);
-      setCursorX(cursorX + 1);
-    }
-  });
-
-  // 限制最大行数
-  useEffect(() => {
-    if (lines.length > maxLines) {
-      setLines(lines.slice(0, maxLines));
-    }
-  }, [lines.length, maxLines]);
-
-  return (
-    <Box flexDirection="column">
-      {/* 提示信息 */}
-      <Box>
-        <Text color="cyan">{chalk.cyan('❯')} </Text>
-        <Text>{message}</Text>
-      </Box>
-
-      {/* 输入区域 */}
-      <Box flexDirection="column" marginLeft={2}>
-        {lines.map((line, index) => {
-          const isActive = index === cursorY;
-          const displayLine = line || (isActive && placeholder ? chalk.dim(placeholder) : '');
-          const cursorIndex = isActive ? cursorX : -1;
-
-          return (
-            <InputLine
-              key={index}
-              text={displayLine}
-              cursorIndex={cursorIndex}
-              lineNumber={index + 1}
-              isActive={isActive}
-              totalLines={lines.length}
-            />
-          );
-        })}
-      </Box>
-
-      {/* 提示信息 */}
-      <Box marginTop={1} marginLeft={2}>
-        <Text color="gray">
-          {chalk.dim('Enter ')}换行 {chalk.dim('|')} {chalk.dim('Ctrl+Enter')}提交 {chalk.dim('|')} {chalk.dim('Ctrl+C')}取消
-        </Text>
-      </Box>
-    </Box>
-  );
-}
-
-/**
- * 单行输入组件（带光标）
- */
-function InputLine({
-  text,
-  cursorIndex,
-  lineNumber,
-  isActive,
-  totalLines,
-}: {
-  text: string;
-  cursorIndex: number;
-  lineNumber: number;
-  isActive: boolean;
-  totalLines: number;
-}) {
-  // 渲染行号（如果多行）
-  const showLineNumber = totalLines > 1;
-
-  if (showLineNumber) {
-    const lineNumStr = String(lineNumber).padStart(3);
-    const lineNumColor = isActive ? 'cyan' : 'gray';
-    const lineNum = chalk[lineNumColor](lineNumStr);
-
-    if (isActive && cursorIndex >= 0) {
-      const beforeCursor = text.slice(0, cursorIndex);
-      const cursorChar = text[cursorIndex] || ' ';
-      const afterCursor = text.slice(cursorIndex + 1);
-
-      return (
-        <Box>
-          <Text>{lineNum} </Text>
-          <Text>{beforeCursor}</Text>
-          <Text inverse>{cursorChar}</Text>
-          <Text>{afterCursor}</Text>
-        </Box>
-      );
-    }
-
-    return (
-      <Box>
-        <Text>{lineNum} </Text>
-        <Text color={isActive ? undefined : 'gray'}>{text}</Text>
-      </Box>
-    );
-  }
-
-  // 单行模式
-  if (isActive && cursorIndex >= 0) {
-    const beforeCursor = text.slice(0, cursorIndex);
-    const cursorChar = text[cursorIndex] || ' ';
-    const afterCursor = text.slice(cursorIndex + 1);
-
-    return (
-      <Box>
-        <Text>{beforeCursor}</Text>
-        <Text inverse>{cursorChar}</Text>
-        <Text>{afterCursor}</Text>
-      </Box>
-    );
-  }
-
-  return <Text color={isActive ? undefined : 'gray'}>{text}</Text>;
-}
-
-/**
- * 异步多行输入（包装函数）
- */
-export async function multiLineInput(
-  message: string,
-  options?: {
+interface Props {
+    value?: string;
+    onChange?: (value: string) => void;
+    onSubmit: (value: string) => void;
     placeholder?: string;
-    defaultValue?: string;
-    maxLines?: number;
-  }
-): Promise<string | null> {
-  return new Promise((resolve) => {
-    let unmountFn: (() => void) | undefined;
-
-    const handleSubmit = (value: string) => {
-      unmountFn?.();
-      resolve(value);
-    };
-
-    const handleCancel = () => {
-      unmountFn?.();
-      resolve(null);
-    };
-
-    const instance = render(
-      <MultiLineInput
-        message={message}
-        placeholder={options?.placeholder}
-        defaultValue={options?.defaultValue}
-        maxLines={options?.maxLines}
-        onSubmit={handleSubmit}
-        onCancel={handleCancel}
-      />
-    );
-
-    unmountFn = instance.unmount;
-  });
 }
+
+export const InkMultilineInput: React.FC<Props> = ({
+    value: controlledValue,
+    onChange,
+    onSubmit,
+    placeholder = "Type here... (Ctrl+S to submit)"
+}) => {
+    // 1. 内部状态 (UI渲染用)
+    const [internalValue, setInternalValue] = useState('');
+    const [cursorIndex, setCursorIndex] = useState(0);
+
+    // 2. 关键修复：使用 Ref 存储“真实”的当前值，防止闭包陷阱
+    // 因为 IME 输入时可能会在极短时间内触发多次 useInput，State 更新来不及
+    const valueRef = useRef('');
+    const cursorRef = useRef(0);
+
+    const { exit } = useApp();
+
+    // 3. 同步外部 Props 到 Ref
+    const activeValue = controlledValue !== undefined ? controlledValue : internalValue;
+
+    // 每次渲染都确保 Ref 与当前的 Value 同步（处理外部修改的情况）
+    useEffect(() => {
+        valueRef.current = activeValue;
+    }, [activeValue]);
+
+    useEffect(() => {
+        cursorRef.current = cursorIndex;
+    }, [cursorIndex]);
+
+    // 4. 输入处理逻辑
+    useInput((input, key) => {
+        // 从 Ref 获取最新的值，而不是从闭包中获取可能的旧值
+        let nextValue = valueRef.current;
+        let nextCursor = cursorRef.current;
+
+        // --- A. 提交逻辑 (Ctrl+S) ---
+        if (key.ctrl && input === 's') {
+            onSubmit(nextValue);
+            return;
+        }
+
+        // --- B. 退出逻辑 (Esc) ---
+        if (key.escape) {
+            exit();
+            return;
+        }
+
+        // --- C. 导航逻辑 ---
+        if (key.leftArrow) {
+            nextCursor = Math.max(0, nextCursor - 1);
+            setCursorIndex(nextCursor);
+            return;
+        }
+        if (key.rightArrow) {
+            nextCursor = Math.min(nextValue.length, nextCursor + 1);
+            setCursorIndex(nextCursor);
+            return;
+        }
+        // 上下移动逻辑略复杂，暂略，通常左右移动够用了
+        if (key.upArrow || key.downArrow) return;
+
+        // --- D. 编辑逻辑 ---
+        if (key.return) {
+            // 换行
+            nextValue = nextValue.slice(0, nextCursor) + '\n' + nextValue.slice(nextCursor);
+            nextCursor = nextCursor + 1;
+        } else if (key.backspace || key.delete) {
+            // 删除
+            if (nextCursor > 0) {
+                nextValue = nextValue.slice(0, nextCursor - 1) + nextValue.slice(nextCursor);
+                nextCursor = nextCursor - 1;
+            }
+        } else {
+            // 普通输入 (包括中文多字输入)
+            // 注意：input 可能是 "你好" (length=2)
+            nextValue = nextValue.slice(0, nextCursor) + input + nextValue.slice(nextCursor);
+            nextCursor = nextCursor + input.length;
+        }
+
+        // --- E. 同步状态 ---
+        // 1. 更新 Ref (保证下一次极其快速的输入能拿到最新值)
+        valueRef.current = nextValue;
+        cursorRef.current = nextCursor;
+
+        // 2. 更新 React State (触发渲染)
+        if (controlledValue === undefined) {
+            setInternalValue(nextValue);
+        }
+        if (onChange) {
+            onChange(nextValue);
+        }
+        setCursorIndex(nextCursor);
+    });
+
+    // --- 渲染部分 ---
+    const renderTextWithCursor = () => {
+        if (!activeValue) {
+            return <Text color="gray">{placeholder}</Text>;
+        }
+
+        const chars = activeValue.split('');
+        const output: React.ReactNode[] = [];
+        const renderLength = Math.max(chars.length, cursorIndex);
+
+        for (let i = 0; i <= renderLength; i++) {
+            const char = chars[i];
+            const isCursor = i === cursorIndex;
+
+            if (isCursor) {
+                // 光标渲染：如果当前位置有字，显示反色字；如果是末尾或换行，显示反色空格
+                const charDisplay = (char === '\n' || char === undefined) ? ' ' : char;
+                output.push(
+                    <Text key={i} inverse color="cyan">
+                        {charDisplay}
+                    </Text>
+                );
+                // 如果光标盖住的是换行符，必须再补一个真实的换行，否则视觉上会少一行
+                if (char === '\n') {
+                    output.push(<Text key={`nl-${i}`}>{'\n'}</Text>);
+                }
+            } else {
+                if (char !== undefined) {
+                    output.push(<Text key={i}>{char}</Text>);
+                }
+            }
+        }
+        return output;
+    };
+
+    return (
+        <Box flexDirection="column" borderStyle="round" borderColor="blue" paddingX={1}>
+            <Box marginBottom={0}>
+                <Text bold color="blue"> 🤖 INPUT </Text>
+            </Box>
+
+            <Box flexDirection="column">
+                <Text>{renderTextWithCursor()}</Text>
+            </Box>
+
+            <Box marginTop={1}>
+                <Text color="gray" dimColor>
+                    [Enter] Newline • [Ctrl+S] Submit
+                </Text>
+            </Box>
+        </Box>
+    );
+};
+

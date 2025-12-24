@@ -2,13 +2,7 @@
  * Format 模块测试
  */
 import { describe, it, expect } from 'vitest';
-import {
-  colors,
-  symbols,
-  boxContent,
-  renderMarkdown,
-  highlightCode,
-} from '../ui/format.js';
+import { colors, symbols, boxContent, renderMarkdown, highlightCode } from '../ui/components/index.js';
 
 describe('colors', () => {
   it('should export color functions', () => {

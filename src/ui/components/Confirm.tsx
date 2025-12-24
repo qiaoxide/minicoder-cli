@@ -58,9 +58,7 @@ export async function inkConfirm(message: string): Promise<boolean | null> {
       resolve(null);
     };
 
-    const instance = render(
-      <ConfirmApp message={message} onConfirm={handleConfirm} />
-    );
+    const instance = render(<ConfirmApp message={message} onConfirm={handleConfirm} />);
 
     unmountFn = instance.unmount;
 

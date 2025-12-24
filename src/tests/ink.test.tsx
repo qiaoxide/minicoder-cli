@@ -26,24 +26,14 @@ function TestInput({
 
 describe('Ink TextInput', () => {
   it('should render input component', () => {
-    const { lastFrame } = render(
-      <TestInput
-        value=""
-        onChange={() => {}}
-        onSubmit={() => {}}
-      />
-    );
+    const { lastFrame } = render(<TestInput value="" onChange={() => {}} onSubmit={() => {}} />);
 
     expect(lastFrame()).toContain('请输入');
   });
 
   it('should display initial value', () => {
     const { lastFrame } = render(
-      <TestInput
-        value="hello"
-        onChange={() => {}}
-        onSubmit={() => {}}
-      />
+      <TestInput value="hello" onChange={() => {}} onSubmit={() => {}} />
     );
 
     expect(lastFrame()).toContain('hello');
@@ -71,17 +61,13 @@ describe('Ink Box component', () => {
 
 describe('Ink colors', () => {
   it('should render colored text', () => {
-    const { lastFrame } = render(
-      <Text color="cyan">Cyan Text</Text>
-    );
+    const { lastFrame } = render(<Text color="cyan">Cyan Text</Text>);
 
     expect(lastFrame()).toContain('Cyan Text');
   });
 
   it('should render bold text', () => {
-    const { lastFrame } = render(
-      <Text bold>Bold Text</Text>
-    );
+    const { lastFrame } = render(<Text bold>Bold Text</Text>);
 
     expect(lastFrame()).toContain('Bold Text');
   });

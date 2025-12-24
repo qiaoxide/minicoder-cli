@@ -59,9 +59,7 @@ export async function inkSelect<T extends string>(
       resolve(null);
     };
 
-    const instance = render(
-      <SelectApp message={message} items={items} onSelect={handleSelect} />
-    );
+    const instance = render(<SelectApp message={message} items={items} onSelect={handleSelect} />);
 
     unmountFn = instance.unmount;
 
@@ -102,9 +100,7 @@ export async function inkMultiSelect<T extends string>(
       resolve(selectedValues.length > 0 ? selectedValues : null);
     };
 
-    const instance = render(
-      <SelectApp message={message} items={items} onSelect={handleSelect} />
-    );
+    const instance = render(<SelectApp message={message} items={items} onSelect={handleSelect} />);
 
     unmountFn = instance.unmount;
 

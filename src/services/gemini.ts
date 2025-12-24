@@ -82,7 +82,9 @@ export class GeminiClient {
     }
 
     if (!this.apiKey) {
-      throw new GeminiApiError('未配置 API Key。请设置 MINICODER_API_KEY 环境变量或运行 mini init 进行配置。');
+      throw new GeminiApiError(
+        '未配置 API Key。请设置 MINICODER_API_KEY 环境变量或运行 mini init 进行配置。'
+      );
     }
   }
 
@@ -102,7 +104,7 @@ export class GeminiClient {
     }
 
     const candidate = response.candidates[0];
-    const text = candidate.content.parts.map(p => p.text).join('');
+    const text = candidate.content.parts.map((p) => p.text).join('');
     return text;
   }
 
@@ -113,7 +115,7 @@ export class GeminiClient {
     messages: Array<{ role: 'user' | 'model'; content: string }>,
     systemPrompt?: string
   ): Promise<string> {
-    const contents: GeminiContent[] = messages.map(m => ({
+    const contents: GeminiContent[] = messages.map((m) => ({
       role: m.role,
       parts: [{ text: m.content }],
     }));
@@ -133,7 +135,7 @@ export class GeminiClient {
     }
 
     const candidate = response.candidates[0];
-    const text = candidate.content.parts.map(p => p.text).join('');
+    const text = candidate.content.parts.map((p) => p.text).join('');
     return text;
   }
 

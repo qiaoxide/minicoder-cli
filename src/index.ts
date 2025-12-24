@@ -4,6 +4,7 @@ import { Cli } from './cli/index.js';
 import { HelloCommand } from './commands/hello.js';
 import { InitCommand } from './commands/init.js';
 import { ChatCommand, AskCommand } from './commands/chat.js';
+import { UiTestCommand } from './commands/ui-test.js';
 
 const cli = new Cli('mini');
 
@@ -12,6 +13,7 @@ cli.register(new HelloCommand());
 cli.register(new InitCommand());
 cli.register(new ChatCommand());
 cli.register(new AskCommand());
+cli.register(new UiTestCommand());
 
 // 运行 CLI
 cli.run(process.argv);

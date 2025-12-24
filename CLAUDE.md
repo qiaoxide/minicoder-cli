@@ -30,16 +30,6 @@ Code comments and documentation should primarily be written in Chinese.
 
 ## Documentation
 
-### ADR (Architecture Decision Records)
-
-Important technical decisions are documented in `docs/adr/`.
-
-When making architectural choices that affect multiple components or future maintainability:
-1. Create an ADR in `docs/adr/`
-2. Follow the format: Title, Status, Background, Decision, Consequences
-3. Reference from code comments when relevant
-
-Example ADR: `docs/adr/001-use-undici-for-proxy.md`
 
 ## Negative Constraints
 
