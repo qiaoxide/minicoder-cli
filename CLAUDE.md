@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+严格贯彻下面 **原则** 和 **工作规则**
+
 ## 原则
 
 **Role Definition:**
@@ -53,10 +55,46 @@
 
 ### 模块化上下文规则 (Modular Context Strategy)
 *   **文档结构**: `src/` 下的每个子模块目录中都包含一个名为 `CONTEXT.md` 的文件。
-*   **强制阅读**: 当你的任务涉及修改某个具体模块的代码时，**必须**先读取该模块目录下的 `README.md`。
+*   **强制阅读**: 当你的任务涉及修改某个具体模块的代码时，**必须**先读取该模块目录下的 `CONTEXT.md`。
+*   **文档更新**: 模块实际代码必须与`CONTEXT.md`一直保持一致，每次涉及到相关模块的改动都需要更新相对应模块文档。
 *   **优先级**: 模块内部的 `CONTEXT.md` 规则优先级高于全局规则。如果发生冲突，以模块级文档为准。
 *   **工作流**:
     1.  确定任务涉及的模块路径（例如 `src/auth`）。
     2.  读取对应`CONTEXT.md` 。
     3.  规划代码修改。
+    4.  更新`CONTEXT.md`
+
+### 模块化上下文文档格式样例
+
+``` markdown
+# [模块名称] 上下文文档 (AI Context)
+
+## 1. 核心职责 (Scope)
+> 用一句话描述本模块做什么。
+*   **负责**: [例如：处理用户登录、JWT 签发、密码重置]
+*   **不负责**: [例如：用户权限校验（由 Middleware 负责）、发送邮件（由 Notification 服务负责）]
+
+## 2. 关键文件索引 (Key Files)
+*   `index.ts`: 模块对外暴露的唯一出口。
+*   `core_logic.ts`: **核心业务逻辑**，修改最频繁。
+*   `types.ts`: 所有接口定义，**修改业务前先看这里**。
+*   `legacy_parser.js`: 遗留代码，逻辑很乱，**除非报错，否则不要动它**。
+
+## 3. 数据流与依赖 (Architecture)
+*   **上游 (Calls from)**: API Controller 会调用本模块的 `service.ts`。
+*   **下游 (Calls to)**: 本模块依赖 `src/utils/db` 和 `src/lib/redis`。
+*   **数据流**: Request -> Validator -> Service -> DB -> Response
+
+## 4. 开发规约 (Rules & Constraints)
+1.  **错误处理**: 严禁直接抛出 Error，必须使用 `Result<T>` 模式返回。
+2.  **类型安全**: 数据库查询结果必须经过 Zod schema 验证（参考 `schemas.ts`）。
+3.  **性能**: `heavy_calculation` 函数会被高频调用，禁止在该函数内进行 I/O 操作。
+
+## 5. 已知问题与雷区 (Gotchas)
+*   **坑**: 这里的 `timestamp` 是毫秒，但数据库里存的是秒，读写时注意转换。
+*   **Hack**: `user_fix.ts` 里有一个硬编码的 `if (id === 100)`，那是超级管理员的后门，**千万别删**。
+
+```
+
+
 

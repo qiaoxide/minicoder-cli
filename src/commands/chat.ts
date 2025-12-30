@@ -17,6 +17,7 @@ import {
 	Cleared,
 	ChatError,
 } from '../ui/print/index.js';
+import { Dots, LoadingDone, LoadingFail } from '../ui/components/index.js';
 
 /**
  * 对话消息
@@ -81,7 +82,10 @@ export class ChatCommand implements Command {
 
 			try {
 				// AI 响应
+				const spinner = Dots('思考中...');
+				spinner.start();
 				const response = await client.chat(messages);
+				LoadingDone(spinner);
 				await AiMessage(response, { modelName: model, showThinking: true });
 
 				messages.push({ role: 'model', content: response });
